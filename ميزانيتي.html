@@ -630,6 +630,9 @@
           style="padding:12px 18px;border-radius:var(--r-sm);border:2px solid var(--border);background:#fff;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)">
           🔌 اختبار
         </button>
+        <button id="btnClearKey" onclick="clearApiKey()" style="display:none;padding:12px 14px;border-radius:var(--r-sm);border:2px solid #fee2e2;background:#fff5f5;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--danger)">
+          🗑️
+        </button>
       </div>
       <div id="apiTestResult" style="margin-top:10px;font-size:13px;text-align:center;font-weight:600;min-height:20px"></div>
     </div>
@@ -751,14 +754,21 @@ async function detectCatAI(name) {
 function saveApiKey() {
   const key   = document.getElementById('inpApiKey').value.trim();
   const model = document.getElementById('selModel').value;
+  if (!key) { toast('⚠️ الحقل فاضي — أدخل API Key أولاً'); return; }
   apiKey  = key;
   aiModel = model;
-  if (key) localStorage.setItem('mz_apikey', key);
-  else     localStorage.removeItem('mz_apikey');
+  localStorage.setItem('mz_apikey', key);
   localStorage.setItem('mz_model', model);
+  updateApiStatus();
+  toast('✅ تم حفظ API Key بنجاح — جاهز للاستخدام');
+}
+
+function clearApiKey() {
+  apiKey = '';
+  localStorage.removeItem('mz_apikey');
   document.getElementById('inpApiKey').value = '';
   updateApiStatus();
-  toast(key ? '✅ تم ربط OpenRouter بنجاح' : '✅ تم إلغاء الربط');
+  toast('✅ تم إلغاء ربط OpenRouter');
 }
 
 async function testApi() {
@@ -780,16 +790,28 @@ async function testApi() {
   }
 }
 
+function initSettingsUI() {
+  const inp = document.getElementById('inpApiKey');
+  const sel = document.getElementById('selModel');
+  if (inp) inp.value = apiKey || '';
+  if (sel) sel.value = aiModel;
+  updateApiStatus();
+  const clearBtn = document.getElementById('btnClearKey');
+  if (clearBtn) clearBtn.style.display = apiKey ? 'inline-flex' : 'none';
+}
+
 function updateApiStatus() {
   const el = document.getElementById('apiKeyStatus');
   if (!el) return;
   if (apiKey) {
-    el.textContent = '🟢 مربوط — ' + aiModel.split('/').pop();
+    el.innerHTML = '🟢 <strong>مربوط</strong> — ' + aiModel.split('/').pop();
     el.style.color = 'var(--success)';
   } else {
     el.textContent = '⚪ غير مربوط — سيُستخدم الكشف المحلي';
     el.style.color = 'var(--muted)';
   }
+  const clearBtn = document.getElementById('btnClearKey');
+  if (clearBtn) clearBtn.style.display = apiKey ? 'inline-flex' : 'none';
 }
 
 /* ── chart registry to destroy before re-create ── */
@@ -848,6 +870,7 @@ function nav(page, el) {
   if (page === 'categories') renderCategories();
   if (page === 'reports')    renderReports();
   if (page === 'insights')   renderInsights();
+  if (page === 'settings')   initSettingsUI();
 }
 
 function goSettings() {
@@ -1467,13 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDashboard();
   document.getElementById('bcVal').textContent = budget.toFixed(3);
   document.getElementById('togAlerts').classList.toggle('on', cfg.alerts);
-  updateApiStatus();
-  const selModel = document.getElementById('selModel');
-  if (selModel) selModel.value = aiModel;
-  if (apiKey) {
-    const inp = document.getElementById('inpApiKey');
-    if (inp) inp.value = apiKey;
-  }
+  initSettingsUI();
 });
 </script>
 </body>
