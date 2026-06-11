@@ -607,9 +607,14 @@
 
       <div class="form-group">
         <label class="form-label">API Key</label>
-        <input id="inpApiKey" class="form-input" type="password"
-               placeholder="sk-or-v1-…" autocomplete="off" />
-        <div id="apiKeyStatus" style="font-size:11px;margin-top:5px;color:var(--muted)"></div>
+        <div style="position:relative">
+          <input id="inpApiKey" class="form-input" type="text"
+                 placeholder="sk-or-v1-…" autocomplete="off"
+                 style="font-family:monospace;font-size:12px;letter-spacing:0.5px;padding-left:44px" />
+          <button onclick="toggleKeyVis()" id="btnShowKey"
+            style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;padding:0;color:var(--muted)">👁️</button>
+        </div>
+        <div id="apiKeyStatus" style="font-size:12px;margin-top:6px;font-weight:600"></div>
       </div>
 
       <div class="form-group">
@@ -763,6 +768,13 @@ function saveApiKey() {
   toast('✅ تم حفظ API Key بنجاح — جاهز للاستخدام');
 }
 
+function toggleKeyVis() {
+  const inp = document.getElementById('inpApiKey');
+  const btn = document.getElementById('btnShowKey');
+  if (inp.type === 'text') { inp.type = 'password'; btn.textContent = '🙈'; }
+  else                     { inp.type = 'text';     btn.textContent = '👁️'; }
+}
+
 function clearApiKey() {
   apiKey = '';
   localStorage.removeItem('mz_apikey');
@@ -804,11 +816,9 @@ function updateApiStatus() {
   const el = document.getElementById('apiKeyStatus');
   if (!el) return;
   if (apiKey) {
-    el.innerHTML = '🟢 <strong>مربوط</strong> — ' + aiModel.split('/').pop();
-    el.style.color = 'var(--success)';
+    el.innerHTML = '<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:20px;font-size:12px">🟢 مربوط — ' + aiModel.split('/').pop() + '</span>';
   } else {
-    el.textContent = '⚪ غير مربوط — سيُستخدم الكشف المحلي';
-    el.style.color = 'var(--muted)';
+    el.innerHTML = '<span style="background:#f3f4f6;color:var(--muted);padding:4px 10px;border-radius:20px;font-size:12px">⚪ غير مربوط</span>';
   }
   const clearBtn = document.getElementById('btnClearKey');
   if (clearBtn) clearBtn.style.display = apiKey ? 'inline-flex' : 'none';
